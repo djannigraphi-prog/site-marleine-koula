@@ -1,0 +1,8 @@
+{
+  "categories": [
+    { "nom": "Perruques", "description": "Lisses, ondulées, bouclées, sur mesure.", "image": "", "accueil": true },
+    { "nom": "Mèches", "description": "Pour rajouts, tissages et tresses.", "image": "", "accueil": true },
+    { "nom": "Styles de coiffure", "description": "Nos coiffures prêtes à porter.", "image": "", "accueil": true },
+    { "nom": "Accessoires de beauté", "description": "Soins, press nails et petits essentiels.", "image": "", "accueil": true }
+  ]
+}

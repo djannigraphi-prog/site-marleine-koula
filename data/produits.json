@@ -1,0 +1,100 @@
+{
+  "produits": [
+    {
+      "nom": "Perruque lisse 16 pouces",
+      "categorie": "Perruques",
+      "description": "Perruque lisse naturelle, tombé fluide. Modèle d'exemple à modifier.",
+      "prix": 45000,
+      "prix_promo": null,
+      "details": "16\" · lisse · cheveux naturels",
+      "image": "",
+      "nouveaute": true,
+      "accueil": true,
+      "disponible": true
+    },
+    {
+      "nom": "Perruque body wave lace frontal",
+      "categorie": "Perruques",
+      "description": "Ondulations souples et lace frontal pour un rendu naturel. Modèle d'exemple.",
+      "prix": 65000,
+      "prix_promo": null,
+      "details": "20\" · body wave · lace frontal",
+      "image": "",
+      "nouveaute": true,
+      "accueil": true,
+      "disponible": true
+    },
+    {
+      "nom": "Perruque bob courte",
+      "categorie": "Perruques",
+      "description": "Coupe carrée moderne, facile à porter au quotidien. Modèle d'exemple.",
+      "prix": 30000,
+      "prix_promo": null,
+      "details": "10\" · lisse",
+      "image": "",
+      "nouveaute": false,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Mèches pour rajout",
+      "categorie": "Mèches",
+      "description": "Mèches souples pour rajouts normal, double raie ou français. Modèle d'exemple.",
+      "prix": 2500,
+      "prix_promo": null,
+      "details": "Paquet · plusieurs couleurs",
+      "image": "",
+      "nouveaute": false,
+      "accueil": true,
+      "disponible": true
+    },
+    {
+      "nom": "Mèches tissage kinky",
+      "categorie": "Mèches",
+      "description": "Texture crépue au rendu naturel pour tissage fermé. Modèle d'exemple.",
+      "prix": 12000,
+      "prix_promo": null,
+      "details": "Texture kinky",
+      "image": "",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Perruque tressée",
+      "categorie": "Styles de coiffure",
+      "description": "Tresses réalisées à la main sur perruque, prêtes à porter. Modèle d'exemple.",
+      "prix": 40000,
+      "prix_promo": null,
+      "details": "Fait main au salon",
+      "image": "",
+      "nouveaute": false,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Press nails",
+      "categorie": "Accessoires de beauté",
+      "description": "Faux ongles confectionnés au salon, à poser soi-même. Modèle d'exemple.",
+      "prix": 5000,
+      "prix_promo": null,
+      "details": "Plusieurs formes et couleurs",
+      "image": "",
+      "nouveaute": true,
+      "accueil": true,
+      "disponible": true
+    },
+    {
+      "nom": "Bonnet en satin",
+      "categorie": "Accessoires de beauté",
+      "description": "Protège vos cheveux et votre perruque pendant la nuit. Modèle d'exemple.",
+      "prix": 3000,
+      "prix_promo": null,
+      "details": "Taille unique",
+      "image": "",
+      "nouveaute": false,
+      "accueil": false,
+      "disponible": true
+    }
+  ]
+}

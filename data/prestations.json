@@ -1,0 +1,11 @@
+{
+  "prestations": [
+    { "nom": "Rajout", "detail": "Normal", "duree": "1 h 30 max", "prix": 5000 },
+    { "nom": "Rajout", "detail": "Double raie", "duree": "1 h 45 max", "prix": 6500 },
+    { "nom": "Rajout", "detail": "Français", "duree": "2 h max", "prix": 10000 },
+    { "nom": "Pose de perruque", "detail": "Avec colle", "duree": "2 h max", "prix": 5000 },
+    { "nom": "Pose de perruque", "detail": "Sans colle", "duree": "2 h max", "prix": 4000 },
+    { "nom": "Customisation", "detail": "Personnalisation de perruque", "duree": "", "prix": 3000 },
+    { "nom": "Shampoing", "detail": "", "duree": "", "prix": 1000 }
+  ]
+}

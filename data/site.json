@@ -1,0 +1,105 @@
+{
+  "identite": {
+    "nom": "Marleine Koula",
+    "activite": "Salon de beauté",
+    "slogan": "Votre satisfaction, notre passion !",
+    "sous_titre": "Perruques sur mesure, mèches, soins de beauté et soins capillaires.",
+    "logo": "assets/logo/logo-mk.png",
+    "logo_rond": "assets/logo/logo-mk-rond.png",
+    "nom_legal": "MK Marleine Koula",
+    "creation": "Depuis octobre 2024"
+  },
+  "accueil": {
+    "enseigne_surtitre": "Yopougon · Niangon Nord",
+    "enseigne_image": "",
+    "enseigne_bouton": "Découvrir la collection",
+    "categories_titre": "Choisissez votre catégorie et découvrez toute une panoplie de choix",
+    "categories_sous_titre": "Perruques, mèches, coiffures et accessoires : touchez une catégorie pour voir les articles.",
+    "categories_bouton": "Tout voir",
+    "proprietaire_surtitre": "La fondatrice",
+    "proprietaire_nom": "Marleine Koula",
+    "proprietaire_fonction": "Fondatrice & experte capillaire",
+    "proprietaire_presentation": "Bienvenue dans notre salon de beauté, votre espace dédié à la coiffure, à la confection de perruques et à la mise en valeur de votre beauté. Nous vous proposons des prestations de qualité, des créations personnalisées et des styles tendance adaptés à vos envies.",
+    "proprietaire_photo": "",
+    "proprietaire_bouton": "Voir les nouveautés",
+    "produits_titre": "En vente au salon",
+    "produits_sous_titre": "Une sélection de nos articles du moment. Ajoutez-les au panier et commandez sur WhatsApp.",
+    "produits_bouton": "Voir toute la boutique",
+    "contacts_titre": "Adresses & contacts",
+    "contacts_sous_titre": "Une question, une commande, un rendez-vous ? Écrivez-nous ou passez au salon.",
+    "reseaux_titre": "Abonnez-vous",
+    "reseaux_texte": "Suivez nos nouvelles créations, nos coiffures du jour et nos arrivages."
+  },
+  "boutique": {
+    "titre": "La boutique",
+    "sous_titre": "Tous nos articles en vente. Filtrez par catégorie ou cherchez un produit.",
+    "recherche_placeholder": "Rechercher une perruque, des mèches…",
+    "bouton_abonner": "S'abonner",
+    "aucun_resultat": "Aucun article ne correspond à votre recherche."
+  },
+  "a_propos": {
+    "titre": "À propos du salon",
+    "introduction": "Bienvenue dans notre salon de beauté, votre espace dédié à la coiffure, à la confection de perruques et à la mise en valeur de votre beauté. Nous vous proposons des prestations de qualité, des créations personnalisées et des styles tendance adaptés à vos envies.",
+    "image": "",
+    "savoir_faire_titre": "Notre savoir-faire",
+    "savoir_faire": [
+      "Coiffure",
+      "Soins capillaires",
+      "Pose de perruque",
+      "Confection de perruques",
+      "Press nails",
+      "Tresses",
+      "Rajouts : normal, double raie, français",
+      "Tissage fermé",
+      "Locks",
+      "Resserrage",
+      "Défaire"
+    ],
+    "distinctions_titre": "Ce qui nous distingue",
+    "distinctions": [
+      { "titre": "Créativité", "texte": "Chaque coiffure et chaque perruque est pensée pour votre visage et votre style." },
+      { "titre": "Innovation", "texte": "Nous suivons les nouvelles tendances et techniques pour vous proposer le meilleur." },
+      { "titre": "Accueil", "texte": "Un salon où l'on prend le temps de vous écouter et de vous conseiller." },
+      { "titre": "Rapport qualité-prix", "texte": "Un travail soigné à des prix justes, accessibles à toutes." }
+    ],
+    "prestations_titre": "Prestations & tarifs",
+    "prestations_note": "Les prix ci-dessous sont fixes. Les autres prestations varient selon votre demande : contactez-nous pour un devis.",
+    "communaute_titre": "Rejoignez la communauté",
+    "communaute_texte": "Retrouvez nos réalisations et nos nouveautés sur les réseaux.",
+    "communaute_bouton": "Rejoindre la communauté"
+  },
+  "contact": {
+    "titre": "Contact",
+    "introduction": "Nous vous accueillons au salon tous les jours. Pour un rendez-vous, appelez-nous ou écrivez-nous sur WhatsApp."
+  },
+  "coordonnees": {
+    "telephone": "+225 07 89 54 20 86",
+    "whatsapp": "+225 05 01 48 45 48",
+    "email": "marleinekoula@gmail.com",
+    "adresse_boutique": "Abidjan, Yopougon, Niangon Nord — en face de la cité Coprim",
+    "adresse_entreprise": "Abidjan, Yopougon, Niangon Nord — en face de la cité Coprim",
+    "lien_maps": "",
+    "rendez_vous": "Rendez-vous par téléphone au +225 07 89 54 20 86 ou sur WhatsApp.",
+    "horaires": [
+      { "jour": "Lundi", "ouverture": "08:30", "fermeture": "20:30" },
+      { "jour": "Mardi", "ouverture": "08:30", "fermeture": "20:30" },
+      { "jour": "Mercredi", "ouverture": "08:30", "fermeture": "20:30" },
+      { "jour": "Jeudi", "ouverture": "08:30", "fermeture": "20:30" },
+      { "jour": "Vendredi", "ouverture": "08:30", "fermeture": "20:30" },
+      { "jour": "Samedi", "ouverture": "08:30", "fermeture": "20:30" },
+      { "jour": "Dimanche", "ouverture": "13:30", "fermeture": "20:30" }
+    ]
+  },
+  "reseaux": [
+    { "nom": "Facebook", "libelle": "Marleine Koula Hair", "url": "https://www.facebook.com/search/top?q=Marleine%20Koula%20Hair" },
+    { "nom": "TikTok", "libelle": "Marleine Koula", "url": "https://www.tiktok.com/search?q=Marleine%20Koula" },
+    { "nom": "WhatsApp", "libelle": "WhatsApp Business", "url": "https://wa.me/2250501484548" },
+    { "nom": "Instagram", "libelle": "", "url": "" }
+  ],
+  "commande": {
+    "devise": "FCFA",
+    "message_whatsapp": "Bonjour Marleine Koula, je souhaite commander :",
+    "paiement": "Paiement en espèces à la livraison ou au retrait en boutique.",
+    "conditions": "Vérifiez votre article avant de payer : aucun retour n'est possible après paiement."
+  }
+}

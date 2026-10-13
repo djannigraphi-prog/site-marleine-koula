@@ -1,0 +1,200 @@
+# Espace d'administration du site Marleine Koula (Decap CMS)
+# Compte GitHub : djannigraphi-prog — dépôt : site-marleine-koula
+backend:
+  name: github
+  repo: djannigraphi-prog/site-marleine-koula
+  branch: main
+  base_url: https://api.netlify.com
+  commit_messages:
+    update: "Mise à jour : {{slug}}"
+    uploadMedia: "Photo ajoutée : {{path}}"
+
+locale: fr
+site_url: /
+display_url: /
+logo_url: /assets/logo/logo-mk-rond.png
+
+media_folder: images/uploads
+public_folder: images/uploads
+
+collections:
+  - name: contenu
+    label: Contenu du site
+    editor: { preview: false }
+    files:
+      - name: produits
+        label: "Produits"
+        file: data/produits.json
+        fields:
+          - name: produits
+            label: Produits
+            label_singular: produit
+            widget: list
+            summary: "{{fields.nom}} — {{fields.prix}} FCFA"
+            fields:
+              - { name: nom, label: Nom du produit, widget: string }
+              - name: categorie
+                label: Catégorie
+                widget: relation
+                collection: contenu
+                file: categories
+                search_fields: ["categories.*.nom"]
+                value_field: "categories.*.nom"
+                display_fields: ["categories.*.nom"]
+              - { name: image, label: "Photo (carrée de préférence)", widget: image, required: false, choose_url: false }
+              - { name: description, label: "Description (1 à 3 phrases)", widget: text, required: false }
+              - { name: details, label: "Détails (longueur, texture, lace…)", widget: string, required: false }
+              - { name: prix, label: "Prix en FCFA (vide = « Prix sur demande »)", widget: number, value_type: int, min: 0, required: false }
+              - { name: prix_promo, label: "Prix promo en FCFA (facultatif)", widget: number, value_type: int, min: 0, required: false }
+              - { name: nouveaute, label: Nouveauté, widget: boolean, default: false, required: false }
+              - { name: accueil, label: "Afficher sur la page d'accueil (8 maximum)", widget: boolean, default: false, required: false }
+              - { name: disponible, label: Disponible à la vente, widget: boolean, default: true, required: false }
+
+      - name: categories
+        label: "Catégories"
+        file: data/categories.json
+        fields:
+          - name: categories
+            label: Catégories
+            label_singular: catégorie
+            widget: list
+            summary: "{{fields.nom}}"
+            fields:
+              - { name: nom, label: Nom de la catégorie, widget: string }
+              - { name: description, label: Description courte, widget: string, required: false }
+              - { name: image, label: "Photo (verticale de préférence)", widget: image, required: false, choose_url: false }
+              - { name: accueil, label: "Afficher sur la page d'accueil", widget: boolean, default: true, required: false }
+
+      - name: prestations
+        label: "Prestations & tarifs"
+        file: data/prestations.json
+        fields:
+          - name: prestations
+            label: Prestations
+            label_singular: prestation
+            widget: list
+            summary: "{{fields.nom}} {{fields.detail}} — {{fields.prix}} FCFA"
+            fields:
+              - { name: nom, label: Prestation, widget: string }
+              - { name: detail, label: Détail, widget: string, required: false }
+              - { name: duree, label: Durée, widget: string, required: false }
+              - { name: prix, label: "Prix en FCFA (vide = « Prix sur demande »)", widget: number, value_type: int, min: 0, required: false }
+
+      - name: site
+        label: "Textes, photos & contacts"
+        file: data/site.json
+        fields:
+          - name: identite
+            label: "Nom, slogan et logo"
+            widget: object
+            collapsed: true
+            fields:
+              - { name: nom, label: Nom affiché, widget: string }
+              - { name: activite, label: Activité (bandeau sous le nom), widget: string }
+              - { name: slogan, label: Slogan, widget: string }
+              - { name: sous_titre, label: Phrase sous le nom, widget: text }
+              - { name: logo, label: Logo carré, widget: image, choose_url: false }
+              - { name: logo_rond, label: "Logo rond (en-tête et pied de page)", widget: image, choose_url: false }
+              - { name: nom_legal, label: Nom légal de l'entreprise, widget: string, required: false }
+              - { name: creation, label: "Date de création (page À propos)", widget: string, required: false }
+          - name: accueil
+            label: Page d'accueil
+            widget: object
+            collapsed: true
+            fields:
+              - { name: enseigne_surtitre, label: "Enseigne — petit texte au-dessus du nom", widget: string }
+              - { name: enseigne_image, label: "Enseigne — grande photo", widget: image, required: false, choose_url: false }
+              - { name: enseigne_bouton, label: "Enseigne — texte du bouton", widget: string }
+              - { name: categories_titre, label: "Catégories — titre", widget: string }
+              - { name: categories_sous_titre, label: "Catégories — texte", widget: text }
+              - { name: categories_bouton, label: "Catégories — bouton", widget: string }
+              - { name: proprietaire_surtitre, label: "Propriétaire — petit titre", widget: string }
+              - { name: proprietaire_nom, label: "Propriétaire — nom", widget: string }
+              - { name: proprietaire_fonction, label: "Propriétaire — fonction", widget: string }
+              - { name: proprietaire_presentation, label: "Propriétaire — présentation", widget: text }
+              - { name: proprietaire_photo, label: "Propriétaire — photo", widget: image, required: false, choose_url: false }
+              - { name: proprietaire_bouton, label: "Propriétaire — bouton", widget: string }
+              - { name: produits_titre, label: "Produits — titre", widget: string }
+              - { name: produits_sous_titre, label: "Produits — texte", widget: text }
+              - { name: produits_bouton, label: "Produits — bouton", widget: string }
+              - { name: contacts_titre, label: "Contacts — titre", widget: string }
+              - { name: contacts_sous_titre, label: "Contacts — texte", widget: text }
+              - { name: reseaux_titre, label: "Abonnement — titre", widget: string }
+              - { name: reseaux_texte, label: "Abonnement — texte", widget: text }
+          - name: boutique
+            label: Page Boutique
+            widget: object
+            collapsed: true
+            fields:
+              - { name: titre, label: Titre, widget: string }
+              - { name: sous_titre, label: Texte d'introduction, widget: text }
+              - { name: recherche_placeholder, label: Texte dans la barre de recherche, widget: string }
+              - { name: bouton_abonner, label: Bouton S'abonner, widget: string }
+              - { name: aucun_resultat, label: Message quand rien n'est trouvé, widget: string }
+          - name: a_propos
+            label: Page À propos
+            widget: object
+            collapsed: true
+            fields:
+              - { name: titre, label: Titre, widget: string }
+              - { name: introduction, label: Présentation, widget: text }
+              - { name: image, label: Photo du salon, widget: image, required: false, choose_url: false }
+              - { name: savoir_faire_titre, label: "Savoir-faire — titre", widget: string }
+              - { name: savoir_faire, label: "Savoir-faire — liste", widget: list, field: { name: element, label: Savoir-faire, widget: string } }
+              - { name: distinctions_titre, label: "Ce qui nous distingue — titre", widget: string }
+              - name: distinctions
+                label: "Ce qui nous distingue — cartes"
+                widget: list
+                summary: "{{fields.titre}}"
+                fields:
+                  - { name: titre, label: Titre, widget: string }
+                  - { name: texte, label: Texte, widget: text }
+              - { name: prestations_titre, label: "Prestations — titre", widget: string }
+              - { name: prestations_note, label: "Prestations — note sous le tableau", widget: text }
+              - { name: communaute_titre, label: "Communauté — titre", widget: string }
+              - { name: communaute_texte, label: "Communauté — texte", widget: text }
+              - { name: communaute_bouton, label: "Communauté — bouton", widget: string }
+          - name: contact
+            label: Page Contact
+            widget: object
+            collapsed: true
+            fields:
+              - { name: titre, label: Titre, widget: string }
+              - { name: introduction, label: Texte d'introduction, widget: text }
+          - name: coordonnees
+            label: Contacts & horaires
+            widget: object
+            collapsed: true
+            fields:
+              - { name: telephone, label: Téléphone, widget: string }
+              - { name: whatsapp, label: "WhatsApp Business (avec +225) — reçoit les commandes", widget: string }
+              - { name: email, label: E-mail, widget: string }
+              - { name: adresse_boutique, label: Adresse de la boutique, widget: string }
+              - { name: adresse_entreprise, label: Adresse de l'entreprise, widget: string }
+              - { name: lien_maps, label: "Lien Google Maps (https://…)", widget: string, required: false, pattern: ['^$|^https?://', "Le lien doit commencer par https://"] }
+              - { name: rendez_vous, label: Texte de prise de rendez-vous, widget: string }
+              - name: horaires
+                label: Horaires
+                widget: list
+                summary: "{{fields.jour}} {{fields.ouverture}}–{{fields.fermeture}}"
+                fields:
+                  - { name: jour, label: Jour, widget: string }
+                  - { name: ouverture, label: "Ouverture (ex. 08:30, vide = fermé)", widget: string, required: false }
+                  - { name: fermeture, label: "Fermeture (ex. 20:30)", widget: string, required: false }
+          - name: reseaux
+            label: Réseaux sociaux
+            widget: list
+            summary: "{{fields.nom}}"
+            fields:
+              - { name: nom, label: "Réseau (Facebook, TikTok, Instagram, WhatsApp)", widget: string }
+              - { name: libelle, label: Nom du compte, widget: string, required: false }
+              - { name: url, label: "Lien complet (vide = bouton masqué)", widget: string, required: false, pattern: ['^$|^https?://', "Le lien doit commencer par https://"] }
+          - name: commande
+            label: Commande & paiement
+            widget: object
+            collapsed: true
+            fields:
+              - { name: devise, label: Devise, widget: string }
+              - { name: message_whatsapp, label: Début du message WhatsApp de commande, widget: string }
+              - { name: paiement, label: Mode de paiement, widget: string }
+              - { name: conditions, label: "Conditions (retours)", widget: string }
