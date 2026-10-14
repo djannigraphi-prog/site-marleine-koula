@@ -10,9 +10,9 @@ backend:
     uploadMedia: "Photo ajoutée : {{path}}"
 
 locale: fr
-site_url: /
-display_url: /
-logo_url: /assets/logo/logo-mk-rond.png
+site_url: https://marleinekoula.com
+display_url: https://marleinekoula.com
+logo_url: https://marleinekoula.com/assets/logo/logo-mk-rond.png
 
 media_folder: images/uploads
 public_folder: images/uploads
