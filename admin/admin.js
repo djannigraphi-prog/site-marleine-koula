@@ -13,6 +13,8 @@ const API = String(C.api || location.origin).replace(/\/$/, "");
 const CLE_BROUILLON = "mk-admin-brouillon-v1";
 const PHOTO_MAX_ENTREE = 15 * 1024 * 1024;
 const PHOTO_COTE_MAX = 1600;
+const INTERVALLE_VERIFICATION = (C.verification && C.verification.intervalle) || 8000;   // ms entre deux vérifications du site
+const DUREE_VERIFICATION = (C.verification && C.verification.duree) || 6 * 60 * 1000;    // durée maximale avant l'avertissement
 const NOMS_FICHIERS = { produits: "Articles", categories: "Catégories", prestations: "Prestations", site: "Textes & contacts" };
 
 const I = {
@@ -925,13 +927,30 @@ function rendreBarrePublier() {
   const zone = $("#zone-publier");
   if (!zone) return;
   const modifies = fichiersModifies();
-  if (E.publication?.etat === "attente" || E.publication?.etat === "ok") {
-    const ok = E.publication.etat === "ok";
-    zone.innerHTML = `<div class="barre-publier ${ok ? "etat-ok" : ""}"><div class="barre-publier-int">
-      <div class="texte"><strong>${ok ? "✓ Vos modifications sont en ligne" : "Publication réussie"}</strong>${ok ? "Le site public affiche la nouvelle version." : "Le site se met à jour, cela prend en général 1 à 2 minutes…"}</div>
-      ${ok ? `<a class="btn or" href="${echap(LIEN_SITE)}" target="_blank" rel="noopener">Voir le site</a>` : '<div class="rouage" style="width:28px;height:28px;border-width:3px;border-color:rgba(255,255,255,.3);border-top-color:#fff" aria-hidden="true"></div>'}
-      ${ok ? '<button class="btn contour" id="fermer-barre">Fermer</button>' : ""}</div></div>`;
+  const etat = E.publication?.etat;
+  if (etat === "attente" || etat === "ok" || etat === "nonconfirme") {
+    const duree = DUREE_VERIFICATION >= 60000 ? Math.round(DUREE_VERIFICATION / 60000) + " minute" + (DUREE_VERIFICATION >= 120000 ? "s" : "") : Math.round(DUREE_VERIFICATION / 1000) + " secondes";
+    const contenu = {
+      attente: {
+        classe: "", titre: "Étape 1 sur 2 ✓ Enregistré sur GitHub",
+        texte: "Étape 2 sur 2 : vérification que le site public affiche la nouvelle version… (en général 1 à 2 minutes)",
+        actions: '<div class="rouage rouage-clair" aria-hidden="true"></div>',
+      },
+      ok: {
+        classe: "etat-ok", titre: "✓ Visible sur le site public",
+        texte: "Enregistré sur GitHub et vérifié sur le site : les visiteurs voient maintenant la nouvelle version.",
+        actions: `<a class="btn or" href="${echap(LIEN_SITE)}" target="_blank" rel="noopener">Voir le site</a><button class="btn contour" id="fermer-barre">Fermer</button>`,
+      },
+      nonconfirme: {
+        classe: "etat-attention", titre: "⚠ Enregistré sur GitHub, mais pas encore visible sur le site public",
+        texte: `Après ${duree} de vérification, le site affiche toujours l'ancienne version. Vos modifications ne sont pas perdues. Réessayez la vérification dans quelques minutes ; si cela continue, prévenez la personne qui gère le site.`,
+        actions: '<button class="btn or" id="reverifier">Vérifier à nouveau</button><button class="btn contour" id="fermer-barre">Fermer</button>',
+      },
+    }[etat];
+    zone.innerHTML = `<div class="barre-publier ${contenu.classe}" data-etat="${etat}" role="status"><div class="barre-publier-int">
+      <div class="texte"><strong>${contenu.titre}</strong>${contenu.texte}</div>${contenu.actions}</div></div>`;
     $("#fermer-barre")?.addEventListener("click", () => { E.publication = null; rendreBarrePublier(); });
+    $("#reverifier")?.addEventListener("click", () => { const pub = E.publication; E.publication = { ...pub, etat: "attente" }; rendreBarrePublier(); surveillerMiseEnLigne(E.publication); });
     if (!modifies.length) return;
   }
   if (!modifies.length) { if (!E.publication) zone.innerHTML = ""; return; }
@@ -964,11 +983,11 @@ async function publier() {
     E.base = r.commit;
     E.original = cloner(E.brouillon);
     ecrireStockage(CLE_BROUILLON, null);
-    E.publication = { etat: "attente", fichiers };
+    E.publication = { etat: "attente", fichiers, photos: photos.map((p) => p.chemin), commit: r.commit };
     fermerVoile();
     rendre();
-    toast("C'est publié ! Le site sera à jour d'ici 1 à 2 minutes.", "succes", 6000);
-    surveillerMiseEnLigne(fichiers);
+    toast("Enregistré sur GitHub. Vérification de la mise en ligne sur le site…", "succes", 6000);
+    surveillerMiseEnLigne(E.publication);
   } catch (e) {
     fermerVoile();
     E.publication = null;
@@ -980,19 +999,32 @@ async function publier() {
   }
 }
 
-async function surveillerMiseEnLigne(fichiers) {
-  const [nom, contenu] = Object.entries(fichiers)[0];
-  const url = SITE.replace(/\/?$/, "/") + "data/" + nom + ".json";
-  const debut = Date.now();
-  while (Date.now() - debut < 6 * 60 * 1000) {
-    await new Promise((ok) => setTimeout(ok, 8000));
-    if (E.publication?.fichiers !== fichiers) return;
-    try {
-      const r = await fetch(url + "?v=" + Date.now(), { cache: "no-store" });
-      if (r.ok && egal(await r.json(), contenu)) { E.publication = { etat: "ok", fichiers }; rendreBarrePublier(); return; }
-    } catch { /* réessaie */ }
+/** Le site public sert-il exactement ce qui vient d'être publié ? (tous les fichiers modifiés et les nouvelles photos) */
+async function siteAJour(pub) {
+  const base = SITE.replace(/\/?$/, "/");
+  const t = Date.now();
+  for (const [nom, contenu] of Object.entries(pub.fichiers)) {
+    const r = await fetch(base + "data/" + nom + ".json?v=" + t, { cache: "no-store" });
+    if (!r.ok || !egal(await r.json(), contenu)) return false;
   }
-  if (E.publication?.fichiers === fichiers) { E.publication = { etat: "ok", fichiers }; rendreBarrePublier(); }
+  for (const chemin of pub.photos || []) {
+    const r = await fetch(base + chemin + "?v=" + t, { cache: "no-store" });
+    if (!r.ok) return false;
+  }
+  return true;
+}
+
+async function surveillerMiseEnLigne(pub) {
+  const debut = Date.now();
+  while (Date.now() - debut < DUREE_VERIFICATION) {
+    await new Promise((ok) => setTimeout(ok, INTERVALLE_VERIFICATION));
+    if (E.publication !== pub) return; // une autre publication a pris le relais
+    let pret = false;
+    try { pret = await siteAJour(pub); } catch { /* site injoignable : on réessaie */ }
+    if (E.publication !== pub) return;
+    if (pret) { E.publication = { ...pub, etat: "ok" }; rendreBarrePublier(); toast("Vos modifications sont visibles sur le site public.", "succes", 6000); return; }
+  }
+  if (E.publication === pub) { E.publication = { ...pub, etat: "nonconfirme" }; rendreBarrePublier(); }
 }
 
 demarrer();

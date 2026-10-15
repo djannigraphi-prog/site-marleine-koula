@@ -133,12 +133,27 @@ jobs:
         run: |
           url="${{ steps.deploiement.outputs.url }}"
           sleep 8
+          sante=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/sante")
+          config=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/config")
+          contenu=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/contenu")
+          branche=$(curl -s "$url/api/sante" | python3 -c "import json,sys;print(json.load(sys.stdin).get('branche',''))" || echo "?")
+          # La page /admin/ n'est servie par le serveur que pour l'essai ; en production, c'est GitHub Pages qui la sert.
+          if [ "${{ steps.cible.outputs.nom }}" = "essai" ]; then
+            page=$(curl -s -o /dev/null -w '%{http_code}' "$url/admin/"); attendue="admin-essai"
+          else
+            page="non applicable (servie par GitHub Pages)"; attendue="main"
+          fi
           {
-            echo "sante=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/sante")"
-            echo "config=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/config")"
-            echo "contenu_sans_connexion=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/contenu")"
-            echo "page_admin=$(curl -s -o /dev/null -w '%{http_code}' "$url/admin/")"
+            echo "sante=$sante"; echo "config=$config"; echo "contenu_sans_connexion=$contenu"
+            echo "page_admin=$page"; echo "branche=$branche"
           } | tee -a "$GITHUB_OUTPUT"
+          erreur=""
+          [ "$sante" = "200" ] || erreur="$erreur santé=$sante"
+          [ "$config" = "200" ] || erreur="$erreur config=$config"
+          [ "$contenu" = "401" ] || erreur="$erreur contenu-sans-connexion=$contenu (401 attendu)"
+          [ "$branche" = "$attendue" ] || erreur="$erreur branche=$branche ($attendue attendue)"
+          if [ "${{ steps.cible.outputs.nom }}" = "essai" ]; then [ "$page" = "200" ] || erreur="$erreur page-admin=$page"; fi
+          if [ -n "$erreur" ]; then echo "::error::Le serveur ne répond pas comme prévu :$erreur"; exit 1; fi
 
       - name: Préparer l'adresse de production dans admin/config.js (branche admin-v2)
         id: config
@@ -190,7 +205,8 @@ jobs:
               "sante": "${{ steps.verification.outputs.sante }}",
               "config": "${{ steps.verification.outputs.config }}",
               "contenu_sans_connexion": "${{ steps.verification.outputs.contenu_sans_connexion }}",
-              "page_admin": "${{ steps.verification.outputs.page_admin }}"
+              "page_admin": "${{ steps.verification.outputs.page_admin }}",
+              "branche_de_publication": "${{ steps.verification.outputs.branche }}"
             },
             "journal": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }

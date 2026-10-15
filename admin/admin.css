@@ -171,9 +171,12 @@ dialog.petit { width: min(440px, calc(100vw - 24px)); }
 .barre-publier .texte { flex: 1 1 260px; font-size: 15px; }
 .barre-publier .texte strong { color: var(--or-clair); display: block; font-size: 16px; }
 .barre-publier .btn.contour { color: #fff; border-color: rgba(255,255,255,.35); }
+.barre-publier .btn.contour:hover { background: rgba(255,255,255,.12); }
 .barre-publier .btn.or { min-width: 150px; }
 @media (max-width: 520px) { .barre-publier .btn { flex: 1; } }
 .barre-publier.etat-ok { background: var(--vert); }
+.barre-publier.etat-attention { background: #7A4A0E; }
+.barre-publier .rouage-clair { width: 28px; height: 28px; border-width: 3px; border-color: rgba(255,255,255,.3); border-top-color: #fff; }
 
 /* ---------- Toasts et chargement ---------- */
 #toasts { position: fixed; left: 50%; transform: translateX(-50%); top: calc(76px + env(safe-area-inset-top)); z-index: 100; display: grid; gap: 8px; width: min(460px, calc(100vw - 32px)); pointer-events: none; }
