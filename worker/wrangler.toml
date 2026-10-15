@@ -1,0 +1,15 @@
+# Serveur d'administration Marleine Koula (Cloudflare Workers, offre gratuite)
+name = "marleinekoula-admin"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+GITHUB_REPO = "djannigraphi-prog/site-marleine-koula"
+GITHUB_BRANCH = "main"
+ALLOWED_ORIGINS = "https://marleinekoula.com,https://www.marleinekoula.com"
+ADMIN_EMAILS = "marleinekoula@gmail.com"
+# FIREBASE_PROJECT_ID est défini lors du déploiement (variable du dépôt GitHub).
+
+# Secret (jamais dans ce fichier) : GITHUB_TOKEN
+#   clé GitHub « fine-grained » limitée au dépôt site-marleine-koula, permission Contents : lecture et écriture.
