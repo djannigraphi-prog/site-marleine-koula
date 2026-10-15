@@ -2,13 +2,26 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B2230">
 <title>Administration · Marleine Koula</title>
 <link rel="icon" href="/assets/logo/favicon.png">
+<link rel="apple-touch-icon" href="/assets/logo/logo-mk-rond.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Marcellus&display=swap">
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
-<!-- Espace d'administration (Sveltia CMS) : produits, photos, prix, catégories, textes, contacts. -->
-<script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+<!-- Espace d'administration Marleine Koula : connexion par e-mail et mot de passe (Firebase),
+     publication du contenu (dossier data/ et photos) via le serveur sécurisé (Cloudflare). -->
+<div id="app" aria-live="polite">
+  <div class="ecran-centre"><div class="carte-connexion"><img src="/assets/logo/logo-mk-rond.png" alt="" class="logo-connexion"><p>Chargement…</p></div></div>
+</div>
+<div id="toasts" role="status" aria-live="polite"></div>
+<noscript><p style="padding:24px;font-family:sans-serif">L'administration nécessite JavaScript. Activez-le dans votre navigateur.</p></noscript>
+<script src="config.js"></script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
