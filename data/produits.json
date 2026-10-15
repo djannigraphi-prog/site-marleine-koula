@@ -1,6 +1,18 @@
 {
   "produits": [
     {
+      "nom": "Press Nails",
+      "categorie": "Accessoires de beauté",
+      "description": "",
+      "prix": null,
+      "prix_promo": null,
+      "details": "",
+      "image": "images/uploads/20261015-press-nails-ba75322d.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
       "nom": "Perruque lisse 16 pouces",
       "categorie": "Perruques",
       "description": "Perruque lisse naturelle, tombé fluide. Modèle d'exemple à modifier.",
