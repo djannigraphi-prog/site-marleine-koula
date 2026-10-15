@@ -3,6 +3,6 @@
    par le déploiement (.github/workflows/deployer-serveur-admin.yml).
    Les réglages de connexion Firebase (publics) sont fournis par ce serveur (/api/config). */
 window.MK_ADMIN = {
-  api: "",
+  api: "https://marleinekoula-admin.djannigraphi.workers.dev",
   site: "/",
 };
