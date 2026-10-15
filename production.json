@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-15T14:43:50Z",
+  "version": "production",
+  "branche": "main",
+  "commit": "be5e87038966c4f7eda85860c865a834fbf14bd5",
+  "etat": "failure",
+  "etapes": {
+    "tests": "success",
+    "reglages": "success",
+    "reglages_manquants": "",
+    "jeton_cloudflare": "success",
+    "jeton_format": "ok",
+    "jeton_actif": "active",
+    "jeton_acces_workers": "ok",
+    "sous_domaine_workers_dev": "djannigraphi",
+    "mode": "deploiement",
+    "deploiement": "success",
+    "secret": "success",
+    "verification": "failure"
+  },
+  "adresse": "https://marleinekoula-admin.djannigraphi.workers.dev",
+  "adresse_production_prevue": "",
+  "controles": {
+    "sante": "200",
+    "config": "200",
+    "contenu_sans_connexion": "401",
+    "page_admin": "non applicable (servie par GitHub Pages)",
+    "branche_de_publication": "?"
+  },
+  "journal": "https://github.com/djannigraphi-prog/site-marleine-koula/actions/runs/38753920172"
+}
