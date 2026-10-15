@@ -1,8 +1,28 @@
 {
   "categories": [
-    { "nom": "Perruques", "description": "Lisses, ondulées, bouclées, sur mesure.", "image": "", "accueil": true },
-    { "nom": "Mèches", "description": "Pour rajouts, tissages et tresses.", "image": "", "accueil": true },
-    { "nom": "Styles de coiffure", "description": "Nos coiffures prêtes à porter.", "image": "", "accueil": true },
-    { "nom": "Accessoires de beauté", "description": "Soins, press nails et petits essentiels.", "image": "", "accueil": true }
+    {
+      "nom": "Perruques",
+      "description": "Lisses, ondulées, bouclées, sur mesure.",
+      "image": "images/uploads/20261015-perruques-e0ac687b.jpg",
+      "accueil": true
+    },
+    {
+      "nom": "Mèches",
+      "description": "Pour rajouts, tissages et tresses.",
+      "image": "images/uploads/20261015-meches-2bcb8fcb.jpg",
+      "accueil": true
+    },
+    {
+      "nom": "Styles de coiffure",
+      "description": "Nos coiffures prêtes à porter.",
+      "image": "images/uploads/20261015-styles-de-coiffure-29eb7d0d.jpg",
+      "accueil": true
+    },
+    {
+      "nom": "Accessoires de beauté",
+      "description": "Soins, press nails et petits essentiels.",
+      "image": "images/uploads/20261015-accessoires-de-beaute-dd7c5794.jpg",
+      "accueil": true
+    }
   ]
 }
