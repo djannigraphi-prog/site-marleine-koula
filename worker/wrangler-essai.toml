@@ -17,4 +17,4 @@ ALLOWED_PROVIDERS = "google.com"
 REDIRECTION_RACINE = "/admin/"
 # FIREBASE_PROJECT_ID et FIREBASE_API_KEY (publics) : ajoutés lors du déploiement.
 # Secret : GITHUB_TOKEN (même clé que la production).
-# Premier déploiement d'essai : 15 octobre 2026 (contrôle du jeton d'abord).
+# Premier déploiement d'essai : 15 octobre 2026 (contrôle du jeton d'abord, 2e essai).
