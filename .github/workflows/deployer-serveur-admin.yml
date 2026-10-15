@@ -126,6 +126,9 @@ jobs:
         if: always()
         env:
           ETAT: ${{ job.status }}
+          S1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          S2: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          S3: ${{ secrets.CONTENU_GITHUB_TOKEN }}
         run: |
           d=$(mktemp -d); cd "$d"; git init -q; git checkout -q -b journal-deploiement
           git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" journal-deploiement 2>/dev/null && git checkout -q FETCH_HEAD -- . 2>/dev/null || true
@@ -155,8 +158,9 @@ jobs:
             "journal": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }
           EOF
+          # Erreurs du déploiement, après masquage de toute valeur secrète (jamais le journal brut).
           if [ -f "$GITHUB_WORKSPACE/worker/deploiement.log" ]; then
-            grep -vE 'token|Token|TOKEN' "$GITHUB_WORKSPACE/worker/deploiement.log" | tail -40 > "${{ steps.cible.outputs.nom }}-wrangler.log" || true
+            python3 "$GITHUB_WORKSPACE/.github/masquer-secrets.py" < "$GITHUB_WORKSPACE/worker/deploiement.log" > "${{ steps.cible.outputs.nom }}-erreurs.txt" || true
           fi
           git add -A; git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Compte rendu ${{ steps.cible.outputs.nom }} $(date -u +%FT%TZ)"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" journal-deploiement
