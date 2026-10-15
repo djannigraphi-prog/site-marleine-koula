@@ -1,12 +1,15 @@
 /* Administration Marleine Koula.
-   Connexion : Firebase Authentication (e-mail + mot de passe).
+   Connexion : Firebase Authentication (compte Google ; e-mail + mot de passe si activé).
+   Seuls les comptes autorisés côté serveur (ADMIN_EMAILS) peuvent lire et publier.
    Données : lues et publiées par le serveur sécurisé (Cloudflare Worker), qui écrit dans le dépôt GitHub.
    « Enregistrer » garde la modification en brouillon sur cet appareil ; « Publier » met tout en ligne. */
-import { initializeApp, getAuth, connectAuthEmulator, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "./vendor/firebase-auth-12.19.0.js";
+import { initializeApp, getAuth, connectAuthEmulator, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithPopup, GoogleAuthProvider, signInWithCredential } from "./vendor/firebase-auth-12.19.0.js";
 import { SECTIONS_SITE } from "./schema.js";
 
 const C = window.MK_ADMIN || {};
 const SITE = C.site || "/";
+const LIEN_SITE = C.lienSite || SITE;
+const API = String(C.api || location.origin).replace(/\/$/, "");
 const CLE_BROUILLON = "mk-admin-brouillon-v1";
 const PHOTO_MAX_ENTREE = 15 * 1024 * 1024;
 const PHOTO_COTE_MAX = 1600;
@@ -93,7 +96,7 @@ async function api(chemin, options = {}) {
   const jeton = await u.getIdToken();
   let r;
   try {
-    r = await fetch(C.api.replace(/\/$/, "") + chemin, { ...options, headers: { ...(options.headers || {}), Authorization: "Bearer " + jeton } });
+    r = await fetch(API + chemin, { ...options, headers: { ...(options.headers || {}), Authorization: "Bearer " + jeton } });
   } catch (e) {
     throw new ErreurApi(0, navigator.onLine === false ? "Pas de connexion internet. Vérifiez votre réseau puis réessayez." : "Le serveur d'administration ne répond pas. Vérifiez votre connexion et réessayez.", "reseau");
   }
@@ -109,17 +112,81 @@ async function api(chemin, options = {}) {
 }
 
 /* ---------- Démarrage et connexion ---------- */
-function demarrer() {
-  if (!C.firebase || !C.firebase.apiKey || !C.api) {
-    $("#app").innerHTML = '<div class="ecran-centre"><div class="carte-connexion"><img src="/assets/logo/logo-mk-rond.png" alt="" class="logo-connexion"><h1>Administration</h1><p class="sous-titre">L\'espace d\'administration est en cours de mise en place. Il sera bientôt disponible.</p></div></div>';
-    return;
+function ecranInfo(titre, texte) {
+  $("#app").innerHTML = `<div class="ecran-centre"><div class="carte-connexion"><img src="/assets/logo/logo-mk-rond.png" alt="" class="logo-connexion"><h1>${echap(titre)}</h1><p class="sous-titre">${texte}</p></div></div>`;
+}
+
+async function demarrer() {
+  let firebase = C.firebase && C.firebase.apiKey ? C.firebase : null;
+  E.methodes = C.methodes || null;
+  if (!firebase || !E.methodes) {
+    // Les réglages publics de connexion sont fournis par le serveur d'administration.
+    try {
+      const r = await fetch(API + "/api/config", { cache: "no-store" });
+      if (!r.ok) throw new Error(String(r.status));
+      const d = await r.json();
+      firebase = firebase || d.firebase;
+      E.methodes = E.methodes || d.methodes;
+      E.essai = !!d.essai;
+    } catch {
+      return ecranInfo("Administration", "L'espace d'administration est en cours de mise en place, ou le serveur ne répond pas. Réessayez dans quelques minutes.");
+    }
   }
-  const app = initializeApp(C.firebase);
+  E.methodes = E.methodes || ["google.com"];
+  const app = initializeApp(firebase);
   E.auth = getAuth(app);
   E.auth.languageCode = "fr";
-  if (C.emulateurAuth) connectAuthEmulator(E.auth, C.emulateurAuth, { disableWarnings: true });
+  if (C.emulateurAuth) {
+    // Tests automatiques uniquement (émulateur Firebase) : compte Google simulé.
+    connectAuthEmulator(E.auth, C.emulateurAuth, { disableWarnings: true });
+    window.__mkConnexionTest = (email, verifie = true) => signInWithCredential(E.auth, GoogleAuthProvider.credential(JSON.stringify({ sub: "test-" + email + (verifie ? "" : "-non-verifie"), email, email_verified: verifie })));
+  }
   setPersistence(E.auth, browserLocalPersistence).catch(() => {});
   onAuthStateChanged(E.auth, (u) => { if (u) ouvrirSession(u); else afficherConnexion(); });
+}
+
+const ICONE_GOOGLE = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+
+function messageErreurGoogle(code) {
+  switch (code) {
+    case "auth/popup-blocked": return "La fenêtre de connexion Google a été bloquée. Autorisez les fenêtres pop-up pour ce site, puis réessayez.";
+    case "auth/unauthorized-domain": return "Cette adresse n'est pas encore autorisée pour la connexion Google (réglage Firebase « Domaines autorisés »).";
+    case "auth/operation-not-allowed": return "La connexion Google n'est pas activée dans Firebase.";
+    case "auth/network-request-failed": return "Pas de connexion internet. Vérifiez votre réseau puis réessayez.";
+    case "auth/too-many-requests": return "Trop de tentatives. Patientez quelques minutes puis réessayez.";
+    case "auth/user-disabled": return "Ce compte a été désactivé.";
+    default: return "La connexion a échoué. Réessayez dans un instant.";
+  }
+}
+
+function afficherConnexionGoogle(opts = {}) {
+  const msg = opts.message ? '<p class="alerte ' + (opts.type || "info") + '" role="alert">' + echap(opts.message) + "</p>" : "";
+  $("#app").innerHTML = `
+  <div class="ecran-centre"><div class="carte-connexion">
+    <img src="/assets/logo/logo-mk-rond.png" alt="" class="logo-connexion">
+    <h1>Espace administration</h1>
+    <p class="sous-titre">Marleine Koula · Salon de beauté</p>
+    ${E.essai ? '<p class="alerte info" style="margin-bottom:14px"><strong>Version d\'essai.</strong> Les publications faites ici ne modifient pas le site public.</p>' : ""}
+    <div style="display:grid;gap:14px">
+      ${msg}
+      <button class="btn large btn-google" id="btn-google" type="button">${ICONE_GOOGLE}Se connecter avec Google</button>
+      <p id="erreur-connexion" class="alerte erreur" role="alert" hidden></p>
+      <p class="aide" style="text-align:center;color:var(--cacao-doux);font-size:14px">Réservé au compte Google du salon.</p>
+    </div>
+  </div></div>`;
+  $("#btn-google").onclick = async () => {
+    const b = $("#btn-google"), zone = $("#erreur-connexion");
+    zone.hidden = true; b.disabled = true;
+    try {
+      const fournisseur = new GoogleAuthProvider();
+      fournisseur.setCustomParameters({ prompt: "select_account" });
+      await signInWithPopup(E.auth, fournisseur);
+    } catch (err) {
+      b.disabled = false;
+      if (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request") return;
+      zone.textContent = messageErreurGoogle(err.code); zone.hidden = false;
+    }
+  };
 }
 
 function messageErreurConnexion(code) {
@@ -137,6 +204,7 @@ function messageErreurConnexion(code) {
 
 function afficherConnexion(opts = {}) {
   E.email = "";
+  if (!(E.methodes || []).includes("password")) return afficherConnexionGoogle(opts);
   const msg = opts.message ? '<p class="alerte ' + (opts.type || "info") + '" role="alert">' + echap(opts.message) + "</p>" : "";
   $("#app").innerHTML = `
   <div class="ecran-centre"><div class="carte-connexion">
@@ -214,8 +282,8 @@ function afficherRefus() {
   <div class="ecran-centre"><div class="carte-connexion">
     <img src="/assets/logo/logo-mk-rond.png" alt="" class="logo-connexion">
     <h1>Accès refusé</h1>
-    <p class="sous-titre">Le compte <strong>${echap(E.auth.currentUser?.email || "")}</strong> n'est pas autorisé à administrer ce site.</p>
-    <button class="btn large" id="btn-refus">Se déconnecter</button>
+    <p class="sous-titre">Le compte <strong>${echap(E.auth.currentUser?.email || "")}</strong> n'est pas autorisé à administrer ce site. Connectez-vous avec le compte du salon.</p>
+    <button class="btn large" id="btn-refus">Utiliser un autre compte</button>
   </div></div>`;
   $("#btn-refus").onclick = () => signOut(E.auth);
 }
@@ -269,9 +337,9 @@ function rendreSquelette() {
   $("#app").innerHTML = `
   <header class="entete"><div class="entete-int">
     <img src="/assets/logo/logo-mk-rond.png" alt="">
-    <div class="titre">Administration<small>${echap(E.email)}</small></div>
+    <div class="titre">Administration${E.essai ? " · essai" : ""}<small>${echap(E.email)}</small></div>
     <div class="actions">
-      <a class="btn contour petit masquer-mobile" href="${echap(SITE)}" target="_blank" rel="noopener">Voir le site</a>
+      <a class="btn contour petit masquer-mobile" href="${echap(LIEN_SITE)}" target="_blank" rel="noopener">Voir le site</a>
       <button class="btn contour petit" id="btn-deconnexion">Se déconnecter</button>
     </div>
   </div></header>
@@ -861,7 +929,7 @@ function rendreBarrePublier() {
     const ok = E.publication.etat === "ok";
     zone.innerHTML = `<div class="barre-publier ${ok ? "etat-ok" : ""}"><div class="barre-publier-int">
       <div class="texte"><strong>${ok ? "✓ Vos modifications sont en ligne" : "Publication réussie"}</strong>${ok ? "Le site public affiche la nouvelle version." : "Le site se met à jour, cela prend en général 1 à 2 minutes…"}</div>
-      ${ok ? `<a class="btn or" href="${echap(SITE)}" target="_blank" rel="noopener">Voir le site</a>` : '<div class="rouage" style="width:28px;height:28px;border-width:3px;border-color:rgba(255,255,255,.3);border-top-color:#fff" aria-hidden="true"></div>'}
+      ${ok ? `<a class="btn or" href="${echap(LIEN_SITE)}" target="_blank" rel="noopener">Voir le site</a>` : '<div class="rouage" style="width:28px;height:28px;border-width:3px;border-color:rgba(255,255,255,.3);border-top-color:#fff" aria-hidden="true"></div>'}
       ${ok ? '<button class="btn contour" id="fermer-barre">Fermer</button>' : ""}</div></div>`;
     $("#fermer-barre")?.addEventListener("click", () => { E.publication = null; rendreBarrePublier(); });
     if (!modifies.length) return;

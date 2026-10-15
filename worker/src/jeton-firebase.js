@@ -30,7 +30,7 @@ export function _viderCache() { cache = { cles: null, expire: 0, url: "" }; }
 
 /**
  * Vérifie un jeton d'identité Firebase. Lève une erreur si quoi que ce soit ne va pas.
- * @returns {Promise<{email: string, uid: string}>}
+ * @returns {Promise<{email: string, uid: string, fournisseur: string, emailVerifie: boolean}>}
  */
 export async function verifierJetonFirebase(jeton, env, fetchFn = (...a) => fetch(...a), maintenant = Math.floor(Date.now() / 1000)) {
   const projet = env.FIREBASE_PROJECT_ID;
@@ -56,7 +56,7 @@ export async function verifierJetonFirebase(jeton, env, fetchFn = (...a) => fetc
   if (typeof c.iat !== "number" || c.iat > maintenant + MARGE_SECONDES) throw new Error("Date d'émission invalide");
   if (typeof c.auth_time !== "number" || c.auth_time > maintenant + MARGE_SECONDES) throw new Error("Date de connexion invalide");
   if (!c.sub || typeof c.sub !== "string") throw new Error("Utilisateur manquant");
-  if (!c.firebase || c.firebase.sign_in_provider !== "password") throw new Error("Méthode de connexion non acceptée");
+  if (!c.firebase || typeof c.firebase.sign_in_provider !== "string") throw new Error("Méthode de connexion inconnue");
   if (!c.email) throw new Error("E-mail manquant");
-  return { email: String(c.email).toLowerCase(), uid: c.sub };
+  return { email: String(c.email).toLowerCase(), uid: c.sub, fournisseur: c.firebase.sign_in_provider, emailVerifie: c.email_verified === true };
 }

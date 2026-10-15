@@ -1,0 +1,19 @@
+# Version d'ESSAI du serveur d'administration.
+# Elle sert aussi la page /admin/ et publie sur la branche « admin-essai » : le site public n'est jamais modifié.
+name = "marleinekoula-admin-essai"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[assets]
+directory = "./essai-public"
+
+[vars]
+GITHUB_REPO = "djannigraphi-prog/site-marleine-koula"
+GITHUB_BRANCH = "admin-essai"
+ALLOWED_ORIGINS = ""
+ADMIN_EMAILS = "marleinekoula@gmail.com"
+ALLOWED_PROVIDERS = "google.com"
+REDIRECTION_RACINE = "/admin/"
+# FIREBASE_PROJECT_ID et FIREBASE_API_KEY (publics) : ajoutés lors du déploiement.
+# Secret : GITHUB_TOKEN (même clé que la production).

@@ -34,10 +34,16 @@ function originesAutorisees(env) {
   return String(env.ALLOWED_ORIGINS || "https://marleinekoula.com").split(",").map((s) => s.trim()).filter(Boolean);
 }
 
+function origineAutorisee(req, env) {
+  const origine = req.headers.get("Origin");
+  if (!origine) return true;
+  return origine === new URL(req.url).origin || originesAutorisees(env).includes(origine);
+}
+
 function entetesCors(req, env) {
   const origine = req.headers.get("Origin");
   const h = { "Vary": "Origin" };
-  if (origine && originesAutorisees(env).includes(origine)) {
+  if (origine && origineAutorisee(req, env)) {
     h["Access-Control-Allow-Origin"] = origine;
     h["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
     h["Access-Control-Allow-Headers"] = "Authorization, Content-Type";
@@ -177,6 +183,9 @@ export function creerGestionnaire(deps) {
     let identite;
     try { identite = await deps.verifierJeton(m[1], env); }
     catch (e) { throw new ErreurHttp(401, "Votre session a expiré. Veuillez vous reconnecter.", "jeton_invalide"); }
+    const fournisseurs = String(env.ALLOWED_PROVIDERS || "google.com").split(",").map((s) => s.trim()).filter(Boolean);
+    if (!fournisseurs.includes(identite.fournisseur)) throw new ErreurHttp(403, "Cette méthode de connexion n'est pas acceptée.", "methode");
+    if (identite.fournisseur !== "password" && !identite.emailVerifie) throw new ErreurHttp(403, "L'adresse e-mail de ce compte n'est pas vérifiée.", "non_autorise");
     const email = String(identite.email || "").toLowerCase();
     const autorises = String(env.ADMIN_EMAILS || "").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
     if (!email || !autorises.includes(email)) throw new ErreurHttp(403, "Ce compte n'est pas autorisé à administrer le site.", "non_autorise");
@@ -269,10 +278,16 @@ export function creerGestionnaire(deps) {
   return async function gerer(req, env) {
     const url = new URL(req.url);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: entetesCors(req, env) });
-    const origine = req.headers.get("Origin");
     try {
-      if (origine && !originesAutorisees(env).includes(origine)) throw new ErreurHttp(403, "Origine non autorisée.", "origine");
-      if (url.pathname === "/" || url.pathname === "/api/sante") return json(req, env, 200, { ok: true, service: "administration Marleine Koula" });
+      if (!origineAutorisee(req, env)) throw new ErreurHttp(403, "Origine non autorisée.", "origine");
+      if (url.pathname === "/" && env.REDIRECTION_RACINE) return Response.redirect(new URL(env.REDIRECTION_RACINE, url).toString(), 302);
+      if (url.pathname === "/" || url.pathname === "/api/sante") return json(req, env, 200, { ok: true, service: "administration Marleine Koula", branche: env.GITHUB_BRANCH || "main" });
+      if (req.method === "GET" && url.pathname === "/api/config") {
+        // Réglages publics de connexion (identiques à ceux d'une application Web Firebase : aucun secret).
+        if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID) throw new ErreurHttp(503, "La connexion n'est pas encore configurée.", "configuration");
+        return json(req, env, 200, { firebase: { apiKey: env.FIREBASE_API_KEY, authDomain: env.FIREBASE_AUTH_DOMAIN || env.FIREBASE_PROJECT_ID + ".firebaseapp.com", projectId: env.FIREBASE_PROJECT_ID },
+          methodes: String(env.ALLOWED_PROVIDERS || "google.com").split(",").map((s) => s.trim()), essai: (env.GITHUB_BRANCH || "main") !== "main" });
+      }
       const utilisateur = await authentifier(req, env);
       if (req.method === "GET" && url.pathname === "/api/session") return json(req, env, 200, { email: utilisateur.email });
       if (req.method === "GET" && url.pathname === "/api/contenu") return json(req, env, 200, await lireContenu(env));

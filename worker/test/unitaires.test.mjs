@@ -18,7 +18,7 @@ async function signer(paire, revendications, entete = { alg: "RS256", kid: "cle1
   return donnees + "." + Buffer.from(sig).toString("base64url");
 }
 const maintenant = Math.floor(Date.now() / 1000);
-const revendicationsOk = (plus = {}) => ({ iss: "https://securetoken.google.com/" + PROJET, aud: PROJET, auth_time: maintenant - 10, iat: maintenant - 10, exp: maintenant + 3500, sub: "uid1", email: "MarleineKoula@gmail.com", firebase: { sign_in_provider: "password" }, ...plus });
+const revendicationsOk = (plus = {}) => ({ iss: "https://securetoken.google.com/" + PROJET, aud: PROJET, auth_time: maintenant - 10, iat: maintenant - 10, exp: maintenant + 3500, sub: "uid1", email: "MarleineKoula@gmail.com", email_verified: true, firebase: { sign_in_provider: "google.com" }, ...plus });
 
 const { paire, jwk } = await cles();
 const autre = await cles();
@@ -35,7 +35,7 @@ for (const [nom, rev, entete, attendu] of [
   ["expiré", { exp: maintenant - 3600 }, null, /expiré/],
   ["mauvais projet (aud)", { aud: "autre" }, null, /Audience/],
   ["mauvais émetteur", { iss: "https://securetoken.google.com/autre" }, null, /Émetteur/],
-  ["connexion Google au lieu du mot de passe", { firebase: { sign_in_provider: "google.com" } }, null, /Méthode/],
+  ["méthode de connexion absente", { firebase: {} }, null, /Méthode/],
   ["algorithme none", {}, { alg: "none", kid: "cle1" }, /Algorithme/],
   ["clé inconnue", {}, { alg: "RS256", kid: "inconnue" }, /inconnue/],
 ]) {
@@ -86,6 +86,43 @@ test("compte autorisé : session OK", async () => {
   assert.equal(r.status, 200);
   assert.equal((await r.json()).email, "marleinekoula@gmail.com");
   assert.equal(r.headers.get("Access-Control-Allow-Origin"), "https://marleinekoula.com");
+});
+
+test("compte autorisé mais connexion par mot de passe (non activée) : 403", async () => {
+  _viderCache();
+  const j = await signer(paire, revendicationsOk({ firebase: { sign_in_provider: "password" } }));
+  const r = await gerer(req("/api/session", { headers: { Authorization: "Bearer " + j } }), envServeur);
+  assert.equal(r.status, 403);
+});
+
+test("compte Google dont l'e-mail n'est pas vérifié : 403", async () => {
+  _viderCache();
+  const j = await signer(paire, revendicationsOk({ email_verified: false }));
+  const r = await gerer(req("/api/session", { headers: { Authorization: "Bearer " + j } }), envServeur);
+  assert.equal(r.status, 403);
+});
+
+test("connexion anonyme Firebase refusée", async () => {
+  _viderCache();
+  const j = await signer(paire, revendicationsOk({ firebase: { sign_in_provider: "anonymous" } }));
+  const r = await gerer(req("/api/session", { headers: { Authorization: "Bearer " + j } }), envServeur);
+  assert.equal(r.status, 403);
+});
+
+test("même origine (page d'essai servie par le serveur) : acceptée", async () => {
+  _viderCache();
+  const j = await signer(paire, revendicationsOk());
+  const r = await gerer(new Request("https://admin.test/api/session", { headers: { Origin: "https://admin.test", Authorization: "Bearer " + j } }), envServeur);
+  assert.equal(r.status, 200);
+});
+
+test("réglages publics /api/config : pas de secret exposé", async () => {
+  const r = await gerer(req("/api/config"), { ...envServeur, GITHUB_TOKEN: "secret-github-xyz", FIREBASE_API_KEY: "cle-publique" });
+  const d = await r.json();
+  assert.equal(r.status, 200);
+  assert.deepEqual(d.firebase, { apiKey: "cle-publique", authDomain: PROJET + ".firebaseapp.com", projectId: PROJET });
+  assert.ok(!JSON.stringify(d).includes("secret-github-xyz"));
+  assert.ok(!JSON.stringify(d).includes("marleinekoula@gmail.com"));
 });
 
 test("site étranger (autre origine) : 403 et aucun en-tête CORS", async () => {

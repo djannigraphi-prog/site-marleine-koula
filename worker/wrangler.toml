@@ -9,7 +9,8 @@ GITHUB_REPO = "djannigraphi-prog/site-marleine-koula"
 GITHUB_BRANCH = "main"
 ALLOWED_ORIGINS = "https://marleinekoula.com,https://www.marleinekoula.com"
 ADMIN_EMAILS = "marleinekoula@gmail.com"
-# FIREBASE_PROJECT_ID est défini lors du déploiement (variable du dépôt GitHub).
+ALLOWED_PROVIDERS = "google.com"
+# FIREBASE_PROJECT_ID et FIREBASE_API_KEY (publics) sont ajoutés lors du déploiement automatique.
 
 # Secret (jamais dans ce fichier) : GITHUB_TOKEN
 #   clé GitHub « fine-grained » limitée au dépôt site-marleine-koula, permission Contents : lecture et écriture.

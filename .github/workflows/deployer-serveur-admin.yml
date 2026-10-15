@@ -1,50 +1,162 @@
-# Déploie le serveur d'administration (Cloudflare Worker) à chaque modification du dossier worker/,
-# ou à la demande (onglet Actions → « Déployer le serveur d'administration » → Run workflow).
-# Réglages nécessaires dans GitHub (Settings → Secrets and variables → Actions) :
+# Déploiement automatique du serveur d'administration Marleine Koula (Cloudflare Workers).
+#  - Branche admin-v2 → version d'ESSAI « marleinekoula-admin-essai » : sert aussi la page /admin/
+#    et publie sur la branche admin-essai. Le site public n'est jamais modifié.
+#  - Branche main → version de PRODUCTION « marleinekoula-admin » (publie sur le site public).
+# Réglages dans GitHub (Settings → Secrets and variables → Actions) :
 #   Secrets   : CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CONTENU_GITHUB_TOKEN
-#   Variables : FIREBASE_PROJECT_ID
+#   Variables : FIREBASE_API_KEY (et FIREBASE_PROJECT_ID si différent de marleinekoula-admin)
+# Après chaque déploiement, un compte rendu (sans aucun secret) est écrit sur la branche journal-deploiement.
 name: Déployer le serveur d'administration
 on:
   push:
-    branches: [main]
-    paths: ["worker/**", ".github/workflows/deployer-serveur-admin.yml"]
+    branches: [admin-v2, main]
+    paths: ["worker/**", "admin/**", "assets/**", ".github/workflows/deployer-serveur-admin.yml"]
   workflow_dispatch:
 permissions:
-  contents: read
-concurrency: { group: serveur-admin, cancel-in-progress: false }
+  contents: write
+concurrency:
+  group: serveur-admin-${{ github.ref_name }}
+  cancel-in-progress: false
+env:
+  WRANGLER: wrangler@4.151.0
+  FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID || 'marleinekoula-admin' }}
+  FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+  WRANGLER_SEND_METRICS: "false"
 jobs:
   deployer:
+    if: github.ref_name == 'admin-v2' || github.ref_name == 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
+
+      - name: Choisir la version (essai ou production)
+        id: cible
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "config=wrangler.toml" >> "$GITHUB_OUTPUT"; echo "nom=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "config=wrangler-essai.toml" >> "$GITHUB_OUTPUT"; echo "nom=essai" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Tests du serveur
+        id: tests
         working-directory: worker
         run: npm test
+
       - name: Vérifier les réglages
+        id: reglages
         env:
           A: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           B: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           C: ${{ secrets.CONTENU_GITHUB_TOKEN }}
-          D: ${{ vars.FIREBASE_PROJECT_ID }}
         run: |
-          manque=0
-          [ -n "$A" ] || { echo "::error::Secret CLOUDFLARE_API_TOKEN manquant"; manque=1; }
-          [ -n "$B" ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID manquant"; manque=1; }
-          [ -n "$C" ] || { echo "::error::Secret CONTENU_GITHUB_TOKEN manquant"; manque=1; }
-          [ -n "$D" ] || { echo "::error::Variable FIREBASE_PROJECT_ID manquante"; manque=1; }
-          exit $manque
+          manque=""
+          [ -n "$A" ] || manque="$manque CLOUDFLARE_API_TOKEN(secret)"
+          [ -n "$B" ] || manque="$manque CLOUDFLARE_ACCOUNT_ID(secret)"
+          [ -n "$C" ] || manque="$manque CONTENU_GITHUB_TOKEN(secret)"
+          [ -n "$FIREBASE_API_KEY" ] || manque="$manque FIREBASE_API_KEY(variable)"
+          echo "manquants=$manque" >> "$GITHUB_OUTPUT"
+          if [ -n "$manque" ]; then echo "::error::Réglages manquants :$manque"; exit 1; fi
+
+      - name: Préparer la page d'administration d'essai
+        if: steps.cible.outputs.nom == 'essai'
+        run: |
+          rm -rf worker/essai-public && mkdir -p worker/essai-public
+          cp -r admin worker/essai-public/admin
+          cp -r assets worker/essai-public/assets
+          cat > worker/essai-public/admin/config.js <<'EOF'
+          window.MK_ADMIN = {
+            site: "https://raw.githubusercontent.com/djannigraphi-prog/site-marleine-koula/admin-essai/",
+            lienSite: "https://github.com/djannigraphi-prog/site-marleine-koula/tree/admin-essai",
+          };
+          EOF
+
       - name: Déployer sur Cloudflare
+        id: deploiement
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx --yes wrangler@4.151.0 deploy --var "FIREBASE_PROJECT_ID:${{ vars.FIREBASE_PROJECT_ID }}"
+        run: |
+          set -o pipefail
+          npx --yes "$WRANGLER" deploy --config "${{ steps.cible.outputs.config }}" \
+            --var "FIREBASE_PROJECT_ID:$FIREBASE_PROJECT_ID" --var "FIREBASE_API_KEY:$FIREBASE_API_KEY" 2>&1 | tee deploiement.log
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploiement.log | head -1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          [ -n "$url" ] || { echo "::error::Adresse workers.dev introuvable (sous-domaine workers.dev à choisir dans Cloudflare ?)"; exit 1; }
+
       - name: Enregistrer la clé GitHub (secrète) dans le serveur
+        id: secret
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CONTENU_GITHUB_TOKEN: ${{ secrets.CONTENU_GITHUB_TOKEN }}
-        run: printf '%s' "$CONTENU_GITHUB_TOKEN" | npx --yes wrangler@4.151.0 secret put GITHUB_TOKEN
+        run: printf '%s' "$CONTENU_GITHUB_TOKEN" | npx --yes "$WRANGLER" secret put GITHUB_TOKEN --config "${{ steps.cible.outputs.config }}"
+
+      - name: Vérifier le serveur en ligne
+        id: verification
+        if: steps.deploiement.outputs.url != ''
+        run: |
+          url="${{ steps.deploiement.outputs.url }}"
+          sleep 8
+          {
+            echo "sante=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/sante")"
+            echo "config=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/config")"
+            echo "contenu_sans_connexion=$(curl -s -o /dev/null -w '%{http_code}' "$url/api/contenu")"
+            echo "page_admin=$(curl -s -o /dev/null -w '%{http_code}' "$url/admin/")"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Préparer l'adresse de production dans admin/config.js (branche admin-v2)
+        id: config
+        if: steps.cible.outputs.nom == 'essai' && steps.deploiement.outputs.url != ''
+        run: |
+          prod=$(echo "${{ steps.deploiement.outputs.url }}" | sed 's#//marleinekoula-admin-essai\.#//marleinekoula-admin.#')
+          sed -i -E "s#^  api: \"[^\"]*\",#  api: \"$prod\",#" admin/config.js
+          if ! git diff --quiet admin/config.js; then
+            git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Administration : adresse du serveur ($prod)" admin/config.js
+            git pull --rebase origin admin-v2 && git push origin HEAD:admin-v2
+          fi
+          echo "prod=$prod" >> "$GITHUB_OUTPUT"
+
+      - name: Compte rendu (branche journal-deploiement)
+        if: always()
+        env:
+          ETAT: ${{ job.status }}
+        run: |
+          d=$(mktemp -d); cd "$d"; git init -q; git checkout -q -b journal-deploiement
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" journal-deploiement 2>/dev/null && git checkout -q FETCH_HEAD -- . 2>/dev/null || true
+          cat > "${{ steps.cible.outputs.nom }}.json" <<EOF
+          {
+            "date": "$(date -u +%FT%TZ)",
+            "version": "${{ steps.cible.outputs.nom }}",
+            "branche": "${{ github.ref_name }}",
+            "commit": "${{ github.sha }}",
+            "etat": "$ETAT",
+            "etapes": {
+              "tests": "${{ steps.tests.outcome }}",
+              "reglages": "${{ steps.reglages.outcome }}",
+              "reglages_manquants": "${{ steps.reglages.outputs.manquants }}",
+              "deploiement": "${{ steps.deploiement.outcome }}",
+              "secret": "${{ steps.secret.outcome }}",
+              "verification": "${{ steps.verification.outcome }}"
+            },
+            "adresse": "${{ steps.deploiement.outputs.url }}",
+            "adresse_production_prevue": "${{ steps.config.outputs.prod }}",
+            "controles": {
+              "sante": "${{ steps.verification.outputs.sante }}",
+              "config": "${{ steps.verification.outputs.config }}",
+              "contenu_sans_connexion": "${{ steps.verification.outputs.contenu_sans_connexion }}",
+              "page_admin": "${{ steps.verification.outputs.page_admin }}"
+            },
+            "journal": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          if [ -f "$GITHUB_WORKSPACE/worker/deploiement.log" ]; then
+            grep -vE 'token|Token|TOKEN' "$GITHUB_WORKSPACE/worker/deploiement.log" | tail -40 > "${{ steps.cible.outputs.nom }}-wrangler.log" || true
+          fi
+          git add -A; git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Compte rendu ${{ steps.cible.outputs.nom }} $(date -u +%FT%TZ)"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" journal-deploiement
