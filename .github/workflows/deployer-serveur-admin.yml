@@ -60,8 +60,37 @@ jobs:
           echo "manquants=$manque" >> "$GITHUB_OUTPUT"
           if [ -n "$manque" ]; then echo "::error::Réglages manquants :$manque"; exit 1; fi
 
+      - name: Vérifier le jeton Cloudflare (sans rien déployer)
+        id: jeton
+        env:
+          TOK: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CPT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 1) Format : le secret doit contenir le jeton seul (pas d'espace, de guillemet ni de « Bearer »).
+          if printf '%s' "$TOK" | grep -qE '[[:space:]"'"'"']|Bearer|Authorization|^-H'; then
+            echo "format=incorrect" >> "$GITHUB_OUTPUT"
+            echo "::error::Le secret CLOUDFLARE_API_TOKEN contient autre chose que le jeton (espace, guillemet, « -H » ou « Bearer »). Collez uniquement la valeur du jeton."
+            exit 1
+          fi
+          echo "format=ok" >> "$GITHUB_OUTPUT"
+          # 2) Le jeton est-il actif ? (jeton d'utilisateur, sinon jeton de compte)
+          actif=$(curl -s -H "Authorization: Bearer $TOK" https://api.cloudflare.com/client/v4/user/tokens/verify | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('status','') if d.get('success') else 'refuse')" || echo erreur)
+          if [ "$actif" != "active" ]; then
+            actif=$(curl -s -H "Authorization: Bearer $TOK" "https://api.cloudflare.com/client/v4/accounts/$CPT/tokens/verify" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('status','') if d.get('success') else 'refuse')" || echo erreur)
+          fi
+          echo "actif=$actif" >> "$GITHUB_OUTPUT"
+          [ "$actif" = "active" ] || { echo "::error::Jeton Cloudflare refusé ou inactif ($actif)."; exit 1; }
+          # 3) Droit Workers Scripts sur le bon compte + sous-domaine workers.dev
+          rep=$(curl -s -H "Authorization: Bearer $TOK" "https://api.cloudflare.com/client/v4/accounts/$CPT/workers/subdomain")
+          compte=$(printf '%s' "$rep" | python3 -c "import json,sys;d=json.load(sys.stdin);print('ok' if d.get('success') else 'refuse:'+','.join(str(e.get('code'))+' '+e.get('message','') for e in d.get('errors',[])))")
+          sous=$(printf '%s' "$rep" | python3 -c "import json,sys;d=json.load(sys.stdin);print((d.get('result') or {}).get('subdomain') or 'aucun')")
+          echo "compte=$compte" >> "$GITHUB_OUTPUT"; echo "sous_domaine=$sous" >> "$GITHUB_OUTPUT"
+          [ "$compte" = "ok" ] || { echo "::error::Le jeton n'a pas accès aux Workers de ce compte ($compte). Vérifiez CLOUDFLARE_ACCOUNT_ID et la permission Workers Scripts : Edit."; exit 1; }
+          [ "$sous" != "aucun" ] || { echo "::error::Aucun sous-domaine workers.dev : ouvrez Workers & Pages dans Cloudflare et choisissez-en un."; exit 1; }
+          echo "Jeton correct : format ok, actif, accès Workers sur le compte, sous-domaine $sous."
+
       - name: Préparer la page d'administration d'essai
-        if: steps.cible.outputs.nom == 'essai'
+        if: ${{ steps.cible.outputs.nom == 'essai' && !contains(github.event.head_commit.message, '[verifier-seulement]') }}
         run: |
           rm -rf worker/essai-public && mkdir -p worker/essai-public
           cp -r admin worker/essai-public/admin
@@ -74,6 +103,7 @@ jobs:
           EOF
 
       - name: Déployer sur Cloudflare
+        if: ${{ !contains(github.event.head_commit.message, '[verifier-seulement]') }}
         id: deploiement
         working-directory: worker
         env:
@@ -88,6 +118,7 @@ jobs:
           [ -n "$url" ] || { echo "::error::Adresse workers.dev introuvable (sous-domaine workers.dev à choisir dans Cloudflare ?)"; exit 1; }
 
       - name: Enregistrer la clé GitHub (secrète) dans le serveur
+        if: ${{ !contains(github.event.head_commit.message, '[verifier-seulement]') }}
         id: secret
         working-directory: worker
         env:
@@ -143,6 +174,12 @@ jobs:
               "tests": "${{ steps.tests.outcome }}",
               "reglages": "${{ steps.reglages.outcome }}",
               "reglages_manquants": "${{ steps.reglages.outputs.manquants }}",
+              "jeton_cloudflare": "${{ steps.jeton.outcome }}",
+              "jeton_format": "${{ steps.jeton.outputs.format }}",
+              "jeton_actif": "${{ steps.jeton.outputs.actif }}",
+              "jeton_acces_workers": "${{ steps.jeton.outputs.compte }}",
+              "sous_domaine_workers_dev": "${{ steps.jeton.outputs.sous_domaine }}",
+              "mode": "${{ contains(github.event.head_commit.message, '[verifier-seulement]') && 'verification seulement' || 'deploiement' }}",
               "deploiement": "${{ steps.deploiement.outcome }}",
               "secret": "${{ steps.secret.outcome }}",
               "verification": "${{ steps.verification.outcome }}"
