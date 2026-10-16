@@ -1,6 +1,18 @@
 {
   "produits": [
     {
+      "nom": "Tissage de coupe carré",
+      "categorie": "Mèches",
+      "description": "Idéale pour les coupe carré classe deux boules tisses",
+      "prix": 3500,
+      "prix_promo": null,
+      "details": "Taille 8 prend le fer",
+      "image": "images/uploads/20261016-tissage-de-coupe-carre-ff24f3f9.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
       "nom": "Jada braids",
       "categorie": "Styles de coiffure",
       "description": "Utiliser avec des indonesies facturé à part 12000",
@@ -25,13 +37,13 @@
       "disponible": true
     },
     {
-      "nom": "Mèche Kinky",
+      "nom": "Tissage naturel yaki",
       "categorie": "Mèches",
-      "description": "Idéal pour les cheveux défrisé ou lisse",
+      "description": "Mèche naturel qui prend le fer la boule a 5000 deux boules idéal pour réalisé une coiffure",
       "prix": 5000,
       "prix_promo": null,
-      "details": "Taille 20",
-      "image": "images/uploads/20261016-meche-kinky-3a4ecb8e.jpg",
+      "details": "Taille 20 couleur 1B",
+      "image": "images/uploads/20261016-meche-kinky-1dacbc2f.jpg",
       "nouveaute": true,
       "accueil": false,
       "disponible": true
