@@ -1,6 +1,42 @@
 {
   "produits": [
     {
+      "nom": "Jada braids",
+      "categorie": "Styles de coiffure",
+      "description": "Utiliser avec des indonesies facturé à part 12000",
+      "prix": 8000,
+      "prix_promo": null,
+      "details": "Taille 30",
+      "image": "images/uploads/20261016-article-52bd0e43.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Burmuse curly",
+      "categorie": "Mèches",
+      "description": "La texture bien moux 4 boules à l’intérieur d’un paquet prend du volume",
+      "prix": 11500,
+      "prix_promo": null,
+      "details": "Taille 22",
+      "image": "images/uploads/20261016-burmuse-curly-63fc1fcd.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Mèche Kinky",
+      "categorie": "Mèches",
+      "description": "Idéal pour les cheveux défrisé ou lisse",
+      "prix": 5000,
+      "prix_promo": null,
+      "details": "Taille 20",
+      "image": "images/uploads/20261016-meche-kinky-3a4ecb8e.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
       "nom": "Perruque lisse 16 pouces",
       "categorie": "Perruques",
       "description": "Perruque lisse naturelle, tombé fluide. Modèle d'exemple à modifier.",
@@ -37,37 +73,13 @@
       "disponible": true
     },
     {
-      "nom": "Mèches pour rajout",
-      "categorie": "Mèches",
-      "description": "Mèches souples pour rajouts normal, double raie ou français. Modèle d'exemple.",
-      "prix": 2500,
-      "prix_promo": null,
-      "details": "Paquet · plusieurs couleurs",
-      "image": "",
-      "nouveaute": false,
-      "accueil": true,
-      "disponible": true
-    },
-    {
-      "nom": "Mèches tissage kinky",
-      "categorie": "Mèches",
-      "description": "Texture crépue au rendu naturel pour tissage fermé. Modèle d'exemple.",
-      "prix": 12000,
-      "prix_promo": null,
-      "details": "Texture kinky",
-      "image": "",
-      "nouveaute": true,
-      "accueil": false,
-      "disponible": true
-    },
-    {
-      "nom": "Perruque tressée",
+      "nom": "Rajout avec des kinky",
       "categorie": "Styles de coiffure",
-      "description": "Tresses réalisées à la main sur perruque, prêtes à porter. Modèle d'exemple.",
-      "prix": 40000,
+      "description": "Tresses réalisées avec des cheveux défrisé 5000 la boule de mèche",
+      "prix": 15000,
       "prix_promo": null,
-      "details": "Fait main au salon",
-      "image": "",
+      "details": "Fait main au salon deux paquet de meche",
+      "image": "images/uploads/20261016-rajout-avec-des-kinky-6093a232.jpg",
       "nouveaute": false,
       "accueil": false,
       "disponible": true
