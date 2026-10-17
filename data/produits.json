@@ -1,6 +1,18 @@
 {
   "produits": [
     {
+      "nom": "Mèche de cheveux nappy et frisé",
+      "categorie": "Mèches",
+      "description": "Très facile à entretenir",
+      "prix": 10000,
+      "prix_promo": null,
+      "details": "Taille 18 (6boules ) couleur 33",
+      "image": "images/uploads/20261017-article-e2b04658.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
       "nom": "Tissage de coupe carré",
       "categorie": "Mèches",
       "description": "Idéale pour les coupe carré classe deux boules tisses",
