@@ -1,9 +1,69 @@
 {
   "produits": [
     {
+      "nom": "Mèche lisse",
+      "categorie": "Mèches",
+      "description": "Mèche semi naturel prend le fer à faible température deux boule pour un rajout",
+      "prix": 6500,
+      "prix_promo": null,
+      "details": "Taille 16",
+      "image": "images/uploads/20261024-article-eb7ae5e4.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Mèche lisse",
+      "categorie": "Mèches",
+      "description": "Qualité semi naturel  prend le fer à faible température",
+      "prix": 6500,
+      "prix_promo": null,
+      "details": "Taille 16",
+      "image": "images/uploads/20261024-article-f37672c9.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Mèche lisse",
+      "categorie": "Mèches",
+      "description": "Prend le fer à faible température ( deux boules pour un rajout) qualité semi naturel",
+      "prix": null,
+      "prix_promo": 6500,
+      "details": "Taille 16 texture lisse",
+      "image": "images/uploads/20261024-article-0e59408e.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Mèche lisse",
+      "categorie": "Mèches",
+      "description": "Mèche semi naturel, prend  le fer à faible température il faut deux boules pour rajout",
+      "prix": 6500,
+      "prix_promo": null,
+      "details": "Taille 16",
+      "image": "images/uploads/20261024-article-2817b77c.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
+      "nom": "Semi naturel",
+      "categorie": "Mèches",
+      "description": "Prend le fer à faible température il faut deux boules pour faire un rajout",
+      "prix": 6500,
+      "prix_promo": null,
+      "details": "Taille 16 texture lisse",
+      "image": "images/uploads/20261024-article-e7f6a316.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
       "nom": "Rajout la métisse",
       "categorie": "Styles de coiffure",
-      "description": "La coiffure utilisée avec les mèches naturels la métisse (10000 le paquet 6boules à l’intérieur)",
+      "description": "La coiffure utilisée avec les mèches naturels la métisse (10000 le paquet 6boules à l’intérieur) facture à part",
       "prix": 5000,
       "prix_promo": null,
       "details": "Taille 16",
