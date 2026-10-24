@@ -1,6 +1,18 @@
 {
   "produits": [
     {
+      "nom": "Rajout la métisse",
+      "categorie": "Styles de coiffure",
+      "description": "La coiffure utilisée avec les mèches naturels la métisse (10000 le paquet 6boules à l’intérieur)",
+      "prix": 5000,
+      "prix_promo": null,
+      "details": "Taille 16",
+      "image": "images/uploads/20261024-article-ed46c64e.jpg",
+      "nouveaute": true,
+      "accueil": false,
+      "disponible": true
+    },
+    {
       "nom": "Mèche de cheveux nappy et frisé",
       "categorie": "Mèches",
       "description": "",
